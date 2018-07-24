@@ -45,6 +45,7 @@ class Viewer(object):
         self.display = None
         self._agents = []
         self._agent_count = 0
+        self._bombs = []
         self._board_state = None
         self._batch = None
         self.window = None
@@ -62,6 +63,9 @@ class Viewer(object):
     def set_agents(self, agents):
         self._agents = agents
         self._agent_count = len(agents)
+
+    def set_bombs(self, bombs):
+        self._bombs = bombs
 
     def set_step(self, step):
         self._step = step
@@ -246,7 +250,7 @@ class PommeViewer(Viewer):
         background = self.render_background()
         text = self.render_text()
         agents = self.render_dead_alive()
-        board = self.render_main_board()
+        board, labels = self.render_main_board()
         agents_board = self.render_agents_board()
 
         self._batch.draw()
@@ -254,11 +258,12 @@ class PommeViewer(Viewer):
 
     def render_main_board(self):
         board = self._board_state
+        bombs = self._bombs
         size = self._tile_size
         x_offset = constants.BORDER_SIZE
         y_offset = constants.BORDER_SIZE
         top = self.board_top(-constants.BORDER_SIZE - 8)
-        return self.render_board(board, x_offset, y_offset, size, top)
+        return self.render_board(board, bombs, x_offset, y_offset, size, top)
 
     def render_agents_board(self):
         x_offset = self._board_size * self._tile_size + constants.BORDER_SIZE
@@ -270,13 +275,15 @@ class PommeViewer(Viewer):
             y_offset = agent.agent_id * size * self._board_size + (
                 agent.agent_id * constants.MARGIN_SIZE) + constants.BORDER_SIZE
             agent_board = self.agent_view(agent)
-            sprite = self.render_board(agent_board, x_offset, y_offset, size,
-                                       top)
+            agent_bombs = [b for b in self._bombs if agent_board[b.position] == self._resource_manager.fog_value()]
+            sprite, _ = self.render_board(agent_board, agent_bombs, x_offset,
+                                       y_offset, size, top)
             agents.append(sprite)
         return agents
 
-    def render_board(self, board, x_offset, y_offset, size, top=0):
+    def render_board(self, board, bombs, x_offset, y_offset, size, top=0):
         sprites = []
+        labels = []
         for r in range(self._board_size):
             for c in range(self._board_size):
                 x = c * size + x_offset
@@ -288,7 +295,16 @@ class PommeViewer(Viewer):
                 sprite = pyglet.sprite.Sprite(
                     tile, x, y, batch=self._batch, group=layer_foreground)
                 sprites.append(sprite)
-        return sprites
+        for b in bombs:
+            x = b.position[1] * size + x_offset + size/2
+            y = top - y_offset - b.position[0] * size + size/2
+            label = pyglet.text.Label(
+                str(b.life), x=x, y=y, batch=self._batch, group=layer_top,
+                font_name='Cousine-Regular', font_size=36,
+                anchor_x='center', anchor_y='center')
+            labels.append(label)
+
+        return sprites, labels
 
     def agent_view(self, agent):
         if not self._is_partially_observable:

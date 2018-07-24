@@ -232,6 +232,7 @@ class Pomme(gym.Env):
 
             self._viewer.set_board(self._board)
             self._viewer.set_agents(self._agents)
+            self._viewer.set_bombs(self._bombs)
             self._viewer.set_step(self._step_count)
             self._viewer.render()
 
@@ -245,6 +246,7 @@ class Pomme(gym.Env):
         else:
             self._viewer.set_board(self._board)
             self._viewer.set_agents(self._agents)
+            self._viewer.set_bombs(self._bombs)
             self._viewer.set_step(self._step_count)
             self._viewer.render()
 
