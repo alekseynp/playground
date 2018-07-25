@@ -297,12 +297,20 @@ class PommeViewer(Viewer):
                 sprites.append(sprite)
         for b in bombs:
             x = b.position[1] * size + x_offset + size/2
-            y = top - y_offset - b.position[0] * size + size/2
-            label = pyglet.text.Label(
+            y = top - y_offset - b.position[0] * size + 0.9*size/2
+            life_label = pyglet.text.Label(
                 str(b.life), x=x, y=y, batch=self._batch, group=layer_top,
-                font_name='Cousine-Regular', font_size=36,
+                font_name='Cousine-Regular', font_size=18, bold=True,
                 anchor_x='center', anchor_y='center')
-            labels.append(label)
+            labels.append(life_label)
+
+            x = b.position[1] * size + x_offset + size
+            y = top - y_offset - b.position[0] * size
+            blast_strength_label = pyglet.text.Label(
+                str(b.blast_strength), x=x, y=y, batch=self._batch, group=layer_top,
+                font_name='Cousine-Regular', font_size=12, bold=True, color=(255,0,0,255),
+                anchor_x='right', anchor_y='bottom')
+            labels.append(blast_strength_label)
 
         return sprites, labels
 
